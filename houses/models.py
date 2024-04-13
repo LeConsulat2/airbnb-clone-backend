@@ -1,7 +1,7 @@
 from django.db import models
 
-class House(models.Model):
 
+class House(models.Model):
     """Modle Definition for Houses"""
 
     name = models.CharField(max_length=140)
@@ -12,5 +12,3 @@ class House(models.Model):
 
     def __str__(self):
         return self.name
-
-
