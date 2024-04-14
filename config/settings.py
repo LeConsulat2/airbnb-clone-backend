@@ -31,7 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 CUSTOMER_APPS = [
-    "houses.apps.HousesConfig",
+    
     "users.apps.UsersConfig"
 ]
 
