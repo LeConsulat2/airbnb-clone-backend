@@ -6,12 +6,26 @@ from .models import User
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
     fieldsets = (
-        ("Profile", 
-         {"fields": ("username", "password", "name", "email", "is_host"),
-          "classes": ("wide",),
-          }
+        (
+            "Profile",
+            {
+                "fields": (
+                    "profile_photo",
+                    "username",
+                    "password",
+                    "name",
+                    "email",
+                    "is_host",
+                    "gender",
+                    "language",
+                    "currency",
+                ),
+                "classes": ("wide",),
+            },
         ),
-        ("Permissions",{
+        (
+            "Permissions",
+            {
                 "fields": (
                     "is_active",
                     "is_staff",
@@ -22,11 +36,10 @@ class CustomUserAdmin(UserAdmin):
                 "classes": ("collapse",),
             },
         ),
-        (("Important dates"), 
-         {"fields": ("last_login", "date_joined"), "classes": ("collapse",)}
-                               
+        (
+            ("Important dates"),
+            {"fields": ("last_login", "date_joined"), "classes": ("collapse",)},
         ),
-        
     )
 
     list_display = ("username", "email", "name", "is_host")
@@ -36,5 +49,7 @@ class CustomUserAdmin(UserAdmin):
         if obj and not obj.is_host:
             for fieldset in fieldsets:
                 if fieldset[0] == "Profile" and "houses" in fieldset[1]["fields"]:
-                    fieldset[1]["fields"] = [field for field in fieldset[1]["fields"] if field != "houses"]
+                    fieldset[1]["fields"] = [
+                        field for field in fieldset[1]["fields"] if field != "houses"
+                    ]
         return fieldsets
