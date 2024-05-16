@@ -21,7 +21,7 @@ class Experience(CommonModel):
         "users.User",
         on_delete=models.CASCADE,
     )
-    price = models.PositiveBigIntegerField()
+    price = models.PositiveIntegerField()
     address = models.CharField(max_length=250)
     start = models.TimeField()
     end = models.TimeField()
