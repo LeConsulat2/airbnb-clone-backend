@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "strawberry.django",
 ]
 
 CUSTOMER_APPS = [
@@ -145,3 +146,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # AUTH
 
 AUTH_USER_MODEL = "users.User"
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ]
+}
