@@ -1,9 +1,7 @@
-from django.urls import path, include
+from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("", views.see_all_rooms),
-    path("<int:room_pk>", views.see_one_room),
-    path("<str:room_name>", views.see_one_room),
-    path("api/v1/rooms/amenities", include("rooms.urls")),
+    path("amenities/", views.Amenities.as_view(), name="amenities-list"),
+    path("amenities/<int:pk>/", views.AmenityDetail.as_view(), name="amenity-detail"),
 ]
