@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils import timezone
 from django.db import transaction
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -20,9 +21,13 @@ from categories.models import Category
 from .serializers import AmenitySerializer, RoomListSerializer, RoomDetailSerializer
 from reviews.serializers import ReviewSerializer
 from medias.serializers import PhotoSerializer
+from bookings.models import Booking
+from bookings.serializers import PublicBookingSerializer
 
 
 class Amenities(APIView):
+    """Handle CRUD operations for amenities."""
+
     def get(self, request):
         all_amenities = Amenity.objects.all()
         serializer = AmenitySerializer(all_amenities, many=True)
@@ -37,6 +42,8 @@ class Amenities(APIView):
 
 
 class AmenityDetail(APIView):
+    """Handle CRUD operations for a specific amenity."""
+
     def get_object(self, pk):
         try:
             return Amenity.objects.get(pk=pk)
@@ -63,6 +70,7 @@ class AmenityDetail(APIView):
 
 
 class Rooms(APIView):
+    """Handle CRUD operations for rooms."""
 
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -90,19 +98,20 @@ class Rooms(APIView):
             try:
                 with transaction.atomic():
                     room = serializer.save(owner=request.user, category=category)
-                    amaenities = request.data.get("amenities")
+                    amenities = request.data.get("amenities")  # Fixed typo here
                     for amenity_pk in amenities:
                         amenity = Amenity.objects.get(pk=amenity_pk)
                         room.amenities.add(amenity)
                     serializer = RoomDetailSerializer(room)
                     return Response(serializer.data)
-            except Exception:
+            except Amenity.DoesNotExist:  # Catch specific exception
                 raise ParseError("Amenity not found")
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class RoomDetail(APIView):
+    """Handle operations for a specific room."""
 
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -136,6 +145,7 @@ class RoomDetail(APIView):
 
 
 class RoomReviews(APIView):
+    """Handle CRUD operations for room reviews."""
 
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -171,6 +181,7 @@ class RoomReviews(APIView):
 
 
 class RoomPhotos(APIView):
+    """Handle CRUD operations for room photos."""
 
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -191,3 +202,26 @@ class RoomPhotos(APIView):
             return Response(serializer.data)
         else:
             return Response(serializer.errors)
+
+
+class RoomBookings(APIView):
+    """Handle CRUD operations for room bookings."""
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_object(self, pk):
+        try:
+            return Room.objects.get(pk=pk)
+        except Room.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk):
+        room = self.get_object(pk)
+        now = timezone.localtime(timezone.now()).date()
+        bookings = Booking.objects.filter(
+            room=room,
+            kind=Booking.BookingKindChoices.ROOM,
+            check_in__gt=now,
+        )
+        serializer = PublicBookingSerializer(bookings, many=True)
+        return Response(serializer.data)
