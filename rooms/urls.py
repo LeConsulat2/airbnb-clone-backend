@@ -14,6 +14,6 @@ urlpatterns = [
     path("<int:pk>/reviews/", views.RoomReviews.as_view(), name="room-reviews"),
     # List all photos for a specific room
     path("<int:pk>/photos/", views.RoomPhotos.as_view(), name="room-photos"),
-    # List
-    path("<int:pk>/bookings", views.RoomBookings.as_view()),
+    # List all bookings for a specific room
+    path("<int:pk>/bookings/", views.RoomBookings.as_view(), name="room-bookings"),
 ]
