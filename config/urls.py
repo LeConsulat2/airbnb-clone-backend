@@ -32,7 +32,7 @@ urlpatterns = [
     # Including medias app URLs
     path("api/v1/medias/", include("medias.urls")),
     # Including wishlits app URLs
-    path("api/v1/wishlists", include("wishlists.urls")),
+    path("api/v1/wishlists/", include("wishlists.urls")),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
