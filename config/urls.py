@@ -29,6 +29,8 @@ urlpatterns = [
     path("api/v1/rooms/", include("rooms.urls")),
     # Including experiences app URLs
     path("api/v1/experiences/", include("experiences.urls")),
+    # Including medias app URLs
+    path("api/v1/medias/", include("medias.urls")),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
