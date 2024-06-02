@@ -17,14 +17,18 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
+    # Admin site
     path("admin/", admin.site.urls),
-    path(
-        "api/v1/categories/", include("categories.urls")
-    ),  # Including categories app URLs
-    path("api/v1/rooms/", include("rooms.urls")),  # Including rooms app URLs
-    path(
-        "api/v1/experiences/", include("experiences.urls")
-    ),  # Including experiences app URLs
+    # Including categories app URLs
+    path("api/v1/categories/", include("categories.urls")),
+    # Including rooms app URLs
+    path("api/v1/rooms/", include("rooms.urls")),
+    # Including experiences app URLs
+    path("api/v1/experiences/", include("experiences.urls")),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
