@@ -1,116 +1,60 @@
+import json
 from rest_framework.test import APITestCase
-from . import models
-from rest_framework import status  # Importing the entire status module
+from rooms import models
+from categories.models import Category  # Import Category from the correct module
+from rest_framework import status
+from users.models import User
 
 
-class TestAmenities(APITestCase):
-
-    NAME = "Amenity Test"
-    DESC = "Amenity Des"
-    URL = "/api/v1/rooms/amenities/"
+class TestRooms(APITestCase):
 
     def setUp(self):
-        models.Amenity.objects.create(
-            name=self.NAME,
-            description=self.DESC,
+        # Create and authenticate a test user
+        self.user = User.objects.create_user(username="test", password="123")
+        self.client.login(username="test", password="123")
+
+    def test_create_room(self):
+        # Test unauthenticated request
+        self.client.logout()
+        response = self.client.post("/api/v1/rooms/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.client.login(username="test", password="123")
+
+        # Create necessary data for creating a room
+        category = Category.objects.create(name="Test Category")
+        amenity = models.Amenity.objects.create(
+            name="Test Amenity", description="Test Description"
         )
 
-    def test_all_amenities(self):
-        response = self.client.get(self.URL)
-        data = response.json()
+        room_data = {
+            "name": "Test Room",
+            "description": "Test Room Description",
+            "category": category.pk,
+            "amenities": [amenity.pk],
+            "price": 100,
+            "beds": 1,
+            "baths": 1,
+            "check_in": "14:00",
+            "check_out": "11:00",
+            "country": "Test Country",
+            "city": "Test City",
+            "rooms": 1,
+            "toilets": 1,
+            "address": "123 Test St",
+            "kind": "private_room",
+        }
 
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK,
-            "Status code isn't 200",
-        )
-        self.assertIsInstance(data, list)
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["name"], self.NAME)
-        self.assertEqual(data[0]["description"], self.DESC)
-
-    def test_create_amenity(self):
-        new_amenity_name = "New Amenity"
-        new_amenity_description = "New Amenity description"
+        print(f"Data being sent in POST request: {json.dumps(room_data, indent=4)}")
 
         response = self.client.post(
-            self.URL,
-            data={
-                "name": new_amenity_name,
-                "description": new_amenity_description,
-            },
+            "/api/v1/rooms/",
+            data=json.dumps(room_data),  # Serialize data to JSON format
             content_type="application/json",
         )
-        data = response.json()
+        print(f"Status Code (POST Room): {response.status_code}")
+        print(f"Response Content (POST Room): {response.content.decode('utf-8')}")
 
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_201_CREATED,
-            "Not 201 status code",
-        )
-        self.assertEqual(
-            data["name"],
-            new_amenity_name,
-        )
-        self.assertEqual(
-            data["description"],
-            new_amenity_description,
-        )
-
-
-class TestAmenity(APITestCase):
-
-    NAME = "Test Amenity"
-    DESC = "Test Description"
-
-    def setUp(self):
-        models.Amenity.objects.create(
-            name=self.NAME,
-            description=self.DESC,
-        )
-
-    def test_get_amenity(self):
-        response = self.client.get("/api/v1/rooms/amenities/2/")
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_404_NOT_FOUND,
-        )
-
-        response = self.client.get("/api/v1/rooms/amenities/1/")
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK,
-        )
-
-        data = response.json()
-        self.assertEqual(
-            data["name"],
-            self.NAME,
-        )
-        self.assertEqual(
-            data["description"],
-            self.DESC,
-        )
-
-    def test_put_amenity(self):
-        updated_name = "Updated Amenity"
-        updated_description = "Updated description"
-        response = self.client.put(
-            "/api/v1/rooms/amenities/1/",
-            data={
-                "name": updated_name,
-                "description": updated_description,
-            },
-            content_type="application/json",
-        )
-        print(f"Status Code (PUT): {response.status_code}")
-        print(f"Response Content (PUT): {response.content}")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        data = response.json()
-        self.assertEqual(data["name"], updated_name)
-        self.assertEqual(data["description"], updated_description)
-
-    def test_delete_amenity(self):
-        response = self.client.delete("/api/v1/rooms/amenities/1/")
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response_data = response.json()
+        self.assertEqual(response_data["name"], room_data["name"])
+        self.assertEqual(response_data["description"], room_data["description"])

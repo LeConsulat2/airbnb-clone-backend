@@ -92,7 +92,9 @@ class Rooms(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = serializers.RoomDetailSerializer(data=request.data)
+        serializer = serializers.RoomDetailSerializer(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             category_pk = request.data.get("category")
             if not category_pk:
@@ -109,15 +111,19 @@ class Rooms(APIView):
                         owner=request.user,
                         category=category,
                     )
-                    amenities = request.data.get("amenities")
+                    amenities = request.data.get("amenities", [])
                     for amenity_pk in amenities:
                         amenity = Amenity.objects.get(pk=amenity_pk)
                         room.amenities.add(amenity)
-                    serializer = serializers.RoomDetailSerializer(room)
-                    return Response(serializer.data)
-            except Exception:
+                    serializer = serializers.RoomDetailSerializer(
+                        room, context={"request": request}
+                    )
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                print(f"Error: {e}")  # Print the exception
                 raise ParseError("Amenity not found")
         else:
+            print(f"Serializer errors: {serializer.errors}")  # Print serializer errors
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

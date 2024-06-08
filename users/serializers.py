@@ -7,7 +7,7 @@ class UserProfileSerializer(ModelSerializer):
         model = User
         fields = (
             "name",
-            "avatar",
+            "profile_photo",
             "username",
         )
 
